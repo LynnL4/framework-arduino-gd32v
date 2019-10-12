@@ -122,7 +122,7 @@ size_t USARTClass::write( const uint8_t uc_data )
 
 void USARTClass::IrqHandler( void )
 {
-	if(usart_flag_get(USART0, USART_FLAG_RBNE)!= RESET)
+	if(usart_flag_get(_pUsart, USART_FLAG_RBNE)!= RESET)
 	{
 		// Read one byte from the receive data register
 		uint8_t RxBuffer;
@@ -141,7 +141,7 @@ extern "C"
 
 	void USART1_IRQHandler(void)
 	{
-		Serial.IrqHandler();
+		Serial1.IrqHandler();
 	}
 }
 USARTClass Serial(USART0,USART0_IRQn,0,NULL);
