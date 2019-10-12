@@ -19,6 +19,9 @@
 #ifndef _USART_CLASS_
 #define _USART_CLASS_
 
+#include "Arduino.h"
+#include "Common.h"
+#include "gd32vf103_gpio.h"
 #include "HardwareSerial.h"
 #include "RingBuffer.h"
 
@@ -31,14 +34,12 @@ class USARTClass : public HardwareSerial
 
   protected:
     uint32_t _pUsart;
-
-    IRQn_Type _dwIrq;
-    uint32_t _dwId;
+    rcu_periph_enum _RCU_USART;
+    uint32_t _tx;
+    uint32_t _rx;
 
   public:
-    USARTClass(uint32_t pUsart, IRQn_Type dwIrq, uint32_t dwId, RingBuffer* pRx_buffer) ;
-    
-    
+    USARTClass(uint32_t pUsart, uint32_t tx, uint32_t rx, rcu_periph_enum RCU_USART);
     void begin(const uint32_t dwBaudRate) ;
     
     void begin(unsigned long baudrate, uint16_t config);

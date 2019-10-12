@@ -23,27 +23,37 @@
 #include "Arduino.h"
 
 
-USARTClass::USARTClass( uint32_t pUsart, IRQn_Type dwIrq, uint32_t dwId, RingBuffer* pRx_buffer )
+USARTClass:: USARTClass(uint32_t pUsart, uint32_t tx, uint32_t rx, rcu_periph_enum RCU_USART)
 {
-	_rx_buffer = pRx_buffer;
+	_rx_buffer = new RingBuffer();
+	_rx_buffer->clear();
 	_pUsart = pUsart;
-	_dwIrq = dwIrq;
-	_dwId = dwId;
+	_RCU_USART = RCU_USART;
+	_tx = tx;
+	_rx = rx;
 }
 
 void USARTClass::begin( const uint32_t dwBaudRate )
 {
-	// Enable USART Clock
 	
-	rcu_periph_clock_enable(RCU_USART0);
-	rcu_periph_clock_enable(RCU_USART1);
+	eclic_global_interrupt_enable();
+    eclic_priority_group_set(ECLIC_PRIGROUP_LEVEL3_PRIO1);
+	if(USART0 == _pUsart)
+	{
+		eclic_irq_enable(USART0_IRQn, 1, 0);
+	}
+	else
+	{
+		eclic_irq_enable(USART1_IRQn, 1, 0);
+	}
+	
+	// Enable USART Clock
+	rcu_periph_clock_enable(_RCU_USART);
 
 	// Configure USART Rx as input floating
-	pinMode(PA10, INPUT);
-	pinMode(PA3, INPUT);
+	pinMode(_rx, INPUT);
 	// Configure USART Tx as alternate function push-pull
-	pinMode(PA9, OUTPUT_AF_PP);
-  	pinMode(PA2, OUTPUT_AF_PP);
+	pinMode(_tx, OUTPUT_AF_PP);
 
     /* USART configure */
     usart_deinit(_pUsart);
@@ -56,6 +66,8 @@ void USARTClass::begin( const uint32_t dwBaudRate )
     usart_receive_config(_pUsart, USART_RECEIVE_ENABLE);
     usart_transmit_config(_pUsart, USART_TRANSMIT_ENABLE);
     usart_enable(_pUsart);
+
+    usart_interrupt_enable(_pUsart, USART_INT_RBNE);
 }
 
 void USARTClass::begin(unsigned long baudrate, uint16_t config)
@@ -74,7 +86,7 @@ void USARTClass::end( void )
 	usart_disable(_pUsart);
 
 	// Disable USART Clock
-	rcu_periph_clock_disable(RCU_USART0);
+	rcu_periph_clock_disable(_RCU_USART);
 }
 
 int USARTClass::available( void )
@@ -144,5 +156,5 @@ extern "C"
 		Serial1.IrqHandler();
 	}
 }
-USARTClass Serial(USART0,USART0_IRQn,0,NULL);
-USARTClass Serial1(USART1,USART1_IRQn,0,NULL);
+USARTClass Serial(USART0,PA9,PA10, RCU_USART0);
+USARTClass Serial1(USART1,PA2,PA3,RCU_USART1);
