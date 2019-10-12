@@ -2,11 +2,11 @@
 #include "gd32vf103.h"
 
 unsigned long millis(void){
-    return (unsigned long)(get_timer_value() * (SystemCoreClock/4000.0));
+     return (uint64_t)(get_timer_value() * (4000.F / SystemCoreClock));
 }
 
 unsigned long micros(void){
-    return (unsigned long)(get_timer_value() * (SystemCoreClock/4000000.0));
+    return (unsigned long)(get_timer_value() * (4000000.0 / SystemCoreClock));
 }
 
 void delay(unsigned long dwMs){
