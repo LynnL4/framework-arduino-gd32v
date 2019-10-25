@@ -23,12 +23,13 @@
 #include "Arduino.h"
 
 
-USARTClass:: USARTClass(uint32_t pUsart, uint32_t tx, uint32_t rx, rcu_periph_enum RCU_USART)
+USARTClass:: USARTClass(uint32_t pUsart, uint32_t tx, uint32_t rx, rcu_periph_enum RCU_USART, IRQn_Type IRQn)
 {
 	_rx_buffer = new RingBuffer();
 	_rx_buffer->clear();
 	_pUsart = pUsart;
 	_RCU_USART = RCU_USART;
+	_IRQn = IRQn;
 	_tx = tx;
 	_rx = rx;
 }
@@ -38,14 +39,7 @@ void USARTClass::begin( const uint32_t dwBaudRate )
 	
 	eclic_global_interrupt_enable();
     eclic_priority_group_set(ECLIC_PRIGROUP_LEVEL3_PRIO1);
-	if(USART0 == _pUsart)
-	{
-		eclic_irq_enable(USART0_IRQn, 1, 0);
-	}
-	else
-	{
-		eclic_irq_enable(USART1_IRQn, 1, 0);
-	}
+	eclic_irq_enable(_IRQn, 1, 0);
 	
 	// Enable USART Clock
 	rcu_periph_clock_enable(_RCU_USART);
@@ -72,8 +66,7 @@ void USARTClass::begin( const uint32_t dwBaudRate )
 
 void USARTClass::begin(unsigned long baudrate, uint16_t config)
 {
-
-
+	begin(baudrate);
 }
 void USARTClass::end( void )
 {
@@ -156,5 +149,5 @@ extern "C"
 		Serial1.IrqHandler();
 	}
 }
-USARTClass Serial(USART0,PA9,PA10, RCU_USART0);
-USARTClass Serial1(USART1,PA2,PA3,RCU_USART1);
+USARTClass Serial(USART0,PA9,PA10, RCU_USART0, USART0_IRQn);
+USARTClass Serial1(USART1,PA2,PA3,RCU_USART1, USART1_IRQn);

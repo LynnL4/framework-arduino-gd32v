@@ -37,9 +37,10 @@ class USARTClass : public HardwareSerial
     rcu_periph_enum _RCU_USART;
     uint32_t _tx;
     uint32_t _rx;
+    IRQn_Type _IRQn;
 
   public:
-    USARTClass(uint32_t pUsart, uint32_t tx, uint32_t rx, rcu_periph_enum RCU_USART);
+    USARTClass(uint32_t pUsart, uint32_t tx, uint32_t rx, rcu_periph_enum RCU_USART, IRQn_Type IRQn);
     void begin(const uint32_t dwBaudRate) ;
     
     void begin(unsigned long baudrate, uint16_t config);
